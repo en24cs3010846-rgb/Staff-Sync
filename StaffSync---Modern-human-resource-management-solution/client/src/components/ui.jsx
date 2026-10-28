@@ -1,0 +1,14 @@
+import { useEffect, useState } from 'react';
+import { Users } from 'lucide-react';
+export const Logo = ({ size = 22 }) => <span className="fw-bold d-inline-flex align-items-center gap-2 text-accent" style={{ fontSize: size }}><Users size={size + 2} />Staff<span style={{ color: '#1f2933' }}>Sync</span></span>;
+export const Toasts = () => {
+  const [list, setList] = useState([]);
+  useEffect(() => { const h = (e) => { setList((l) => [...l, e.detail]); setTimeout(() => setList((l) => l.filter((x) => x.id !== e.detail.id)), 4000); }; window.addEventListener('toast', h); return () => window.removeEventListener('toast', h); }, []);
+  return <div className="toasts">{list.map((t) => <div key={t.id} className={`alert alert-${t.type} shadow-sm py-2 mb-2`}>{t.message}</div>)}</div>;
+};
+export const State = ({ loading, error, empty, children }) => loading ? <div className="text-center p-5"><div className="spinner-border text-secondary" /></div> : error ? <div className="alert alert-danger">{error}</div> : empty ? <div className="text-center text-muted p-5">Nothing to show yet.</div> : children;
+export const Badge = ({ v }) => { const c = { Approved: 'success', Rejected: 'danger', Pending: 'warning', Cancelled: 'secondary', ACTIVE: 'success', INACTIVE: 'secondary', Present: 'success', Late: 'warning', 'Half Day': 'info', Absent: 'danger', Scheduled: 'primary', Completed: 'success', Closed: 'secondary' }[v] || 'secondary'; return <span className={`badge text-bg-${c}`}>{v}</span>; };
+export const Table = ({ cols, rows }) => <div className="table-responsive"><table className="table table-hover align-middle mb-0"><thead><tr>{cols.map((c) => <th key={c.h}>{c.h}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={r._id || i}>{cols.map((c) => <td key={c.h}>{c.r(r)}</td>)}</tr>)}</tbody></table></div>;
+export const Pager = ({ page, total, limit, set }) => { const pages = Math.ceil((total || 0) / limit); return pages > 1 ? <div className="d-flex justify-content-between align-items-center mt-3"><small className="text-muted">Page {page} of {pages} · {total} records</small><div className="btn-group"><button className="btn btn-sm btn-outline-secondary" disabled={page <= 1} onClick={() => set(page - 1)}>Prev</button><button className="btn btn-sm btn-outline-secondary" disabled={page >= pages} onClick={() => set(page + 1)}>Next</button></div></div> : null; };
+export const Field = ({ label, children }) => <div className="mb-3"><label className="form-label small fw-semibold">{label}</label>{children}</div>;
+export const Stat = ({ label, value, icon: I }) => <div className="col-6 col-lg-3"><div className="card h-100"><div className="card-body d-flex justify-content-between"><div><div className="text-muted small">{label}</div><div className="stat">{value ?? '—'}</div></div>{I && <I className="text-accent" size={22} />}</div></div></div>;

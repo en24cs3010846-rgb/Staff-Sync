@@ -1,0 +1,15 @@
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import api from '../services/api';
+import { fetchMe } from '../store';
+import { act, fmt } from '../utils/hooks';
+import { Field } from '../components/ui';
+export default function Profile() {
+  const { user } = useSelector((s) => s.auth); const d = useDispatch();
+  const [p, setP] = useState({ phone: user.phone || '', address: user.address || '', emergencyContact: user.emergencyContact || {} }), [pw, setPw] = useState({ currentPassword: '', newPassword: '' });
+  const ec = (k) => ({ value: p.emergencyContact[k] || '', onChange: (e) => setP({ ...p, emergencyContact: { ...p.emergencyContact, [k]: e.target.value } }) });
+  return (<><h4 className="mb-3">{user.role === 'HR' ? 'Settings' : 'My Profile'}</h4><div className="row g-3"><div className="col-lg-6"><div className="card card-body"><h6>Employment details</h6>{[['Name', user.name], ['Email', user.email], ['Employee ID', user.employeeId], ['Department', user.department], ['Designation', user.designation], ['Joined', fmt(user.joiningDate)]].map(([k, v]) => <div key={k} className="d-flex justify-content-between border-bottom py-1"><span className="text-muted">{k}</span><span>{v || '—'}</span></div>)}<small className="text-muted mt-2">Role, ID, salary, status and manager can only be changed by HR.</small></div>
+    <form className="card card-body mt-3" onSubmit={async (e) => { e.preventDefault(); if (await act(api.put('/employees/me', p), 'Profile updated')) d(fetchMe()); }}><h6>Contact information</h6><Field label="Phone"><input className="form-control" value={p.phone} onChange={(e) => setP({ ...p, phone: e.target.value })} /></Field><Field label="Address"><input className="form-control" value={p.address} onChange={(e) => setP({ ...p, address: e.target.value })} /></Field>
+      <div className="row"><div className="col"><Field label="Emergency contact"><input className="form-control" {...ec('name')} /></Field></div><div className="col"><Field label="Phone"><input className="form-control" {...ec('phone')} /></Field></div></div><button className="btn btn-primary">Save</button></form></div>
+    <div className="col-lg-6"><form className="card card-body" onSubmit={async (e) => { e.preventDefault(); if (await act(api.post('/auth/change-password', pw), 'Password changed')) setPw({ currentPassword: '', newPassword: '' }); }}><h6>Change password</h6>{user.mustChangePassword && <div className="alert alert-warning py-2 small">Please change your initial password.</div>}<Field label="Current password"><input required type="password" className="form-control" value={pw.currentPassword} onChange={(e) => setPw({ ...pw, currentPassword: e.target.value })} /></Field><Field label="New password (8+ chars, letter and number)"><input required type="password" minLength={8} className="form-control" value={pw.newPassword} onChange={(e) => setPw({ ...pw, newPassword: e.target.value })} /></Field><button className="btn btn-primary">Update password</button></form></div></div></>);
+}
